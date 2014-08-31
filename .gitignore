@@ -1,0 +1,4 @@
+/obj
+*.depend
+*.layout
+bin/debug/

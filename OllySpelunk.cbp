@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="OllySpelunk" />
+		<Option platforms="Windows;" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/debug/OllySpelunk" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/debug/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-march=i386" />
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-funsigned-char" />
+					<Add option="-Wno-missing-braces" />
+					<Add option="-DBUILD_DLL" />
+					<Add option="-DUNICODE=1" />
+					<Add option="-DDEVELOPMENT_MODE" />
+				</Compiler>
+				<Linker>
+					<Add library="user32" />
+					<Add library=".\ollydbg.lib" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/release/OllySpelunk" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/release/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-march=i386" />
+					<Add option="-fexpensive-optimizations" />
+					<Add option="-O3" />
+					<Add option="-Wall" />
+					<Add option="-funsigned-char" />
+					<Add option="-Wno-missing-braces" />
+					<Add option="-DBUILD_DLL" />
+					<Add option="-DUNICODE=1" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="user32" />
+					<Add library=".\ollydbg.lib" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-funsigned-char" />
+			<Add option="-Wno-missing-braces" />
+		</Compiler>
+		<Unit filename="OllySpelunk.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="OllySpelunk.h" />
+		<Unit filename="Resource.h" />
+		<Unit filename="Resource.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="Settings.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Settings.h" />
+		<Unit filename="plugin.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+			<envvars />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
