@@ -49,7 +49,7 @@ void about_message(void);
 
 /* Log window functions */
 void create_log_window(void);
-LRESULT CALLBACK log_window_proc(t_table *pTable, HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+long log_window_proc(t_table *pTable, HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 long log_window_draw(wchar_t *szBuffer, uchar *pMask, int *pSelect, t_table *pTable, t_drawheader *pHeader, int iColumn, void *pCache);
 int log_window_sort_proc(const t_sorthdr *pSortHeader1, const t_sorthdr *pSortHeader2, const int iSort);
 
