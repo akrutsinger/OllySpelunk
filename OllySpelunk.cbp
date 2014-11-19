@@ -22,10 +22,6 @@
 					<Add option="-DUNICODE=1" />
 					<Add option="-DDEVELOPMENT_MODE" />
 				</Compiler>
-				<Linker>
-					<Add library="user32" />
-					<Add library=".\ollydbg.lib" />
-				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/release/OllySpelunk" prefix_auto="1" extension_auto="1" />
@@ -44,8 +40,6 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add library="user32" />
-					<Add library=".\ollydbg.lib" />
 				</Linker>
 			</Target>
 		</Build>
@@ -53,6 +47,10 @@
 			<Add option="-funsigned-char" />
 			<Add option="-Wno-missing-braces" />
 		</Compiler>
+		<Linker>
+			<Add library="user32" />
+			<Add library=".\ollydbg.lib" />
+		</Linker>
 		<Unit filename="OllySpelunk.c">
 			<Option compilerVar="CC" />
 		</Unit>

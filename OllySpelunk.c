@@ -235,7 +235,7 @@ long log_window_draw(wchar_t *pszBuffer, uchar *pMask, int *pSelect, t_table *pT
 	return str_len;
 }
 
-LRESULT CALLBACK log_window_proc(t_table *pTable, HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+long log_window_proc(t_table *pTable, HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	LPLOGDATA pLogData;
 	switch (uMsg)
