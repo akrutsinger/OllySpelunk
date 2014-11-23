@@ -49,21 +49,21 @@
 		</Compiler>
 		<Linker>
 			<Add library="user32" />
-			<Add library=".\ollydbg.lib" />
+			<Add library=".\lib\ollydbg.lib" />
 		</Linker>
-		<Unit filename="OllySpelunk.c">
+		<Unit filename=".\src\OllySpelunk.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="OllySpelunk.h" />
-		<Unit filename="Resource.h" />
-		<Unit filename="Resource.rc">
+		<Unit filename=".\src\OllySpelunk.h" />
+		<Unit filename=".\src\Resource.h" />
+		<Unit filename=".\src\Resource.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
-		<Unit filename="Settings.c">
+		<Unit filename=".\src\Settings.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Settings.h" />
-		<Unit filename="plugin.h" />
+		<Unit filename=".\src\Settings.h" />
+		<Unit filename=".\src\plugin.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />
