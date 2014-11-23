@@ -1,10 +1,7 @@
 /*******************************************************************************
  * OllySpelunk - Settings.c
  *
- * Copyright (c) 2013, Austyn Krutsinger
- * All rights reserved.
- *
- * OllySpelunk is released under the New BSD license (see LICENSE.txt).
+ * Written by Austyn Krutsinger
  *
  ******************************************************************************/
 
