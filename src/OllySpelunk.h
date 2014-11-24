@@ -63,6 +63,7 @@ typedef struct _LOGDATA {
 	DWORD		dwType;		/* Type of entry, TY_xxx */
 
 	/* Custom data follows header. */
+	DWORD		dwCaveType;			/* type of cave (e.g. 0x00, 0x90, 0xCC) */
 	DWORD		dwCaveSize;			/* size of code cave */
 } LOGDATA, *LPLOGDATA;
 
