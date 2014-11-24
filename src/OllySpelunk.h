@@ -1,10 +1,7 @@
 /*******************************************************************************
  * OllySpelunk - OllySpelunk.h
  *
- * Copyright (c) 2013, Austyn Krutsinger
- * All rights reserved.
- *
- * OllySpelunk is released under the New BSD license (see LICENSE.txt).
+ * Written by Austyn Krutsinger
  *
  ******************************************************************************/
 
@@ -25,7 +22,7 @@
 #endif
 
 #define OLLYSPELUNK_NAME		L"OllySpelunk"		/* Unique plugin name */
-#define OLLYSPELUNK_VERSION		L"0.2.1"			/* Plugin version (stable . update . patch  - status) */
+#define OLLYSPELUNK_VERSION		L"0.3.0"			/* Plugin version (stable . update . patch  - status) */
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,6 +63,7 @@ typedef struct _LOGDATA {
 	DWORD		dwType;		/* Type of entry, TY_xxx */
 
 	/* Custom data follows header. */
+	DWORD		dwCaveType;			/* type of cave (e.g. 0x00, 0x90, 0xCC) */
 	DWORD		dwCaveSize;			/* size of code cave */
 } LOGDATA, *LPLOGDATA;
 

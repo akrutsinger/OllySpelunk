@@ -1,10 +1,7 @@
 /*******************************************************************************
  * OllySpelunk - OllySpelunk.c
  *
- * Copyright (c) 2013, Austyn Krutsinger
- * All rights reserved.
- *
- * OllySpelunk is released under the New BSD license (see LICENSE.txt).
+ * Written by Austyn Krutsinger
  *
  ******************************************************************************/
 
@@ -107,30 +104,14 @@ void about_message(void)
 	/* but secure copy makes buffer overflow impossible. */
 	n = StrcopyW(szMessage, TEXTLEN, L"OllySpelunk v");
 	n += StrcopyW(szMessage + n, TEXTLEN - n, OLLYSPELUNK_VERSION);
-	n += StrcopyW(szMessage + n, TEXTLEN - n, L"\n\nCoded by Austyn Krutsinger <akrutsinger@gmail.com>");
+	n += StrcopyW(szMessage + n, TEXTLEN - n, L"\n\nWritten by Austyn Krutsinger <akrutsinger@gmail.com>");
 	n += StrcopyW(szMessage + n, TEXTLEN - n, L"\n\nCompiled on ");
 	Asciitounicode(__DATE__, SHORTNAME, szBuffer, SHORTNAME);
 	n += StrcopyW(szMessage + n, TEXTLEN - n, szBuffer);
 	n += StrcopyW(szMessage + n, TEXTLEN - n, L" ");
 	Asciitounicode(__TIME__, SHORTNAME, szBuffer, SHORTNAME);
 	n += StrcopyW(szMessage + n, TEXTLEN - n, szBuffer);
-	n += StrcopyW(szMessage + n, TEXTLEN - n, L" with ");
-	#if defined(__BORLANDC__)
-		n += StrcopyW(szMessage + n, TEXTLEN - n, L"Borland (R) ");
-	#elif defined(_MSC_VER)
-		n += StrcopyW(szMessage + n, TEXTLEN - n, L"Microsoft (R) ");
-	#elif defined(__MINGW32__)
-		n += StrcopyW(szMessage + n, TEXTLEN - n, L"MinGW32 ");
-	#elif defined(__GNUC__)
-		StrcopyW(szMessage + n, TEXTLEN - n, L"GCC ");
-	#else
-		n += StrcopyW(szMessage + n, TEXTLEN - n, L"\n\nCompiled with ");
-	#endif
-	#ifdef __cplusplus
-		StrcopyW(szMessage + n, TEXTLEN - n, L"C++ compiler");
-	#else
-		StrcopyW(szMessage + n, TEXTLEN - n, L"C compiler");
-	#endif
+
 	MessageBox(hwollymain, szMessage, L"About OllySpelunk", MB_OK|MB_ICONINFORMATION);
 	/* Suspendallthreads() and Resumeallthreads() must be paired, even if they */
 	/* are called in inverse order! */
@@ -201,12 +182,17 @@ void create_log_window(void)
 	logtable.bar.mode[0] = BAR_SORT;
 	logtable.bar.defdx[0] = 9;
 
-	logtable.bar.name[1] = L"Cave Size";
+	logtable.bar.name[1] = L"Cave Type";
 	logtable.bar.expl[1] = L"";
 	logtable.bar.mode[1] = BAR_SORT;
-	logtable.bar.defdx[1] = 64;
+	logtable.bar.defdx[1] = 10;
 
-	logtable.bar.nbar = 2;
+	logtable.bar.name[2] = L"Cave Size";
+	logtable.bar.expl[2] = L"";
+	logtable.bar.mode[2] = BAR_SORT;
+	logtable.bar.defdx[2] = 60;
+
+	logtable.bar.nbar = 3;
 	logtable.tabfunc = (TABFUNC*)log_window_proc;
 	logtable.custommode = 0;
 	logtable.customdata = NULL;
@@ -226,7 +212,10 @@ long log_window_draw(wchar_t *pszBuffer, uchar *pMask, int *pSelect, t_table *pT
 	case 0:	/* address of cave */
 		str_len = Simpleaddress(pszBuffer, pLogData->dwAddress, pMask, pSelect);
 		break;
-	case 1: /* size of code cave */
+	case 1: /* type of code cave */
+		str_len = swprintf(pszBuffer, L"0x%02X", pLogData->dwCaveType);
+		break;
+	case 2: /* size of code cave */
         str_len = swprintf(pszBuffer, L"%lu", pLogData->dwCaveSize);
 		break;
 	default:
@@ -266,10 +255,17 @@ int log_window_sort_proc(const t_sorthdr *pSortHeader1, const t_sorthdr *pSortHe
     pLogData1 = (LPLOGDATA)pSortHeader1;
     pLogData2 = (LPLOGDATA)pSortHeader2;
 
-	if (iSort == 1) {	/* sort by size of code cave */
+	if (iSort == 2) {	/* sort by size of code cave */
 		if (pLogData1->dwCaveSize > pLogData2->dwCaveSize) {
 			i = -1;
 		} else if (pLogData1->dwCaveSize < pLogData2->dwCaveSize){
+			i = 1;
+		}
+	}
+	if (i == 1) {	/* sort by type of cave data */
+		if (pLogData1->dwCaveType > pLogData2->dwCaveType) {
+			i = -1;
+		} else if (pLogData1->dwCaveType < pLogData2->dwCaveType){
 			i = 1;
 		}
 	}
@@ -291,7 +287,7 @@ void FindCodeCaves(void)
 	DWORD		dwCaveStartAddress	= 0;
 	DWORD		dwCaveSize			= 0;
 	DWORD		nIndex				= 0;
-	BOOL		bSaveAddress		= TRUE;
+	BOOL		bSaveStartAddress	= TRUE;
 	LOGDATA		stLogData			= {0};
 	wchar_t		szTitle[SHORTNAME]	= {0};
 	int			n					= 0;
@@ -313,26 +309,124 @@ void FindCodeCaves(void)
 	lpBuffer = (LPBYTE)Memalloc(pModule->codesize, REPORT|ZEROINIT);
 	DWORD dwBytesRead = Readmemory(lpBuffer, pModule->codebase, pModule->codesize, MM_SILENT);
 
-	for (nIndex = 0; nIndex <= dwBytesRead; nIndex++) {
-        /* find start of cave */
-        if (lpBuffer[nIndex] == '\0') {
-        	if (bSaveAddress == TRUE) {
-				dwCaveStartAddress = pModule->codebase + nIndex;
-				bSaveAddress = FALSE;
-        	}
-        	dwCaveSize++;
-		} else {
-			/* Cave is large enough to save */
-			if (dwCaveSize >= g_iMinimumCaveSize) {
-				stLogData.dwAddress = dwCaveStartAddress;
-				stLogData.dwSize = 1;
-				stLogData.dwType = 0;
-				stLogData.dwCaveSize = dwCaveSize;
-				Addsorteddata(&(logtable.sorted), &stLogData);
+	/* TODO: Optimize out this lazy-ass search algorithm */
+
+	/* search for NULL code caves */
+	if (g_cave_search_type & CAVE_TYPE_NULL) {
+		for (nIndex = 0; nIndex <= dwBytesRead; nIndex++) {
+			/* find start of NULL-byte code cave */
+			if ((lpBuffer[nIndex] == 0x00)) {
+				if (bSaveStartAddress == TRUE) {
+					dwCaveStartAddress = pModule->codebase + nIndex;
+					bSaveStartAddress = FALSE;
+				}
+				dwCaveSize++;
+			} else {
+				/* reached end of a code cave */
+				if (dwCaveSize >= g_iMinimumCaveSize) {
+					/* Cave is large enough to save */
+					stLogData.dwAddress = dwCaveStartAddress;
+					stLogData.dwSize = 1;
+					stLogData.dwType = 0;
+					stLogData.dwCaveType = 0x00;
+					stLogData.dwCaveSize = dwCaveSize;
+					Addsorteddata(&(logtable.sorted), &stLogData);
+				}
+				/* need to reset save flag and cave size to find the next cave start */
+				bSaveStartAddress = TRUE;
+				dwCaveSize = 0;
 			}
-			/* need to reset save flag and cave size to find the next cave start */
-			bSaveAddress = TRUE;
-			dwCaveSize = 0;
+		}
+	}
+
+	/* search for NOP code caves */
+	if (g_cave_search_type & CAVE_TYPE_NOP) {
+		for (nIndex = 0; nIndex <= dwBytesRead; nIndex++) {
+			/* find start of NOP code cave */
+			if ((lpBuffer[nIndex] == 0x90)) {
+				if (bSaveStartAddress == TRUE) {
+					dwCaveStartAddress = pModule->codebase + nIndex;
+					bSaveStartAddress = FALSE;
+				}
+				dwCaveSize++;
+			} else {
+				/* reached end of a code cave */
+				if (dwCaveSize >= g_iMinimumCaveSize) {
+					/* Cave is large enough to save */
+					stLogData.dwAddress = dwCaveStartAddress;
+					stLogData.dwSize = 1;
+					stLogData.dwType = 0;
+					stLogData.dwCaveType = 0x90;
+					stLogData.dwCaveSize = dwCaveSize;
+					Addsorteddata(&(logtable.sorted), &stLogData);
+				}
+				/* need to reset save flag and cave size to find the next cave start */
+				bSaveStartAddress = TRUE;
+				dwCaveSize = 0;
+			}
+		}
+	}
+
+	/* search for INT3 code caves */
+	if (g_cave_search_type & CAVE_TYPE_INT3) {
+		for (nIndex = 0; nIndex <= dwBytesRead; nIndex++) {
+			/* find start of INT3 code cave */
+			if ((lpBuffer[nIndex] == 0xCC)) {
+				if (bSaveStartAddress == TRUE) {
+					dwCaveStartAddress = pModule->codebase + nIndex;
+					bSaveStartAddress = FALSE;
+				}
+				dwCaveSize++;
+			} else {
+				/* reached end of a code cave */
+				if (dwCaveSize >= g_iMinimumCaveSize) {
+					/* Cave is large enough to save */
+					stLogData.dwAddress = dwCaveStartAddress;
+					stLogData.dwSize = 1;
+					stLogData.dwType = 0;
+					stLogData.dwCaveType = 0xCC;
+					stLogData.dwCaveSize = dwCaveSize;
+					Addsorteddata(&(logtable.sorted), &stLogData);
+				}
+				/* need to reset save flag and cave size to find the next cave start */
+				bSaveStartAddress = TRUE;
+				dwCaveSize = 0;
+			}
+		}
+	}
+
+	/* search for user-defined code caves */
+	if (g_cave_search_type & CAVE_TYPE_CUSTOM) {
+		/* if user-defined is the same as a previous selected search, don't search it here */
+		if (((g_cave_search_type == 0x00) && (g_cave_search_type & CAVE_TYPE_NULL))
+			|| ((g_cave_search_type == 0x90) && (g_cave_search_type & CAVE_TYPE_NOP))
+			|| ((g_cave_search_type == 0xCC) && (g_cave_search_type & CAVE_TYPE_INT3))) {
+			/* don't take unnecessary risks spelunking in caves that have already been explored */
+		} else {
+			for (nIndex = 0; nIndex <= dwBytesRead; nIndex++) {
+				/* find start of user-defined value code cave */
+				if ((lpBuffer[nIndex] == g_custom_search_value)) {
+					if (bSaveStartAddress == TRUE) {
+						dwCaveStartAddress = pModule->codebase + nIndex;
+						bSaveStartAddress = FALSE;
+					}
+					dwCaveSize++;
+				} else {
+					/* reached end of a code cave */
+					if (dwCaveSize >= g_iMinimumCaveSize) {
+						/* Cave is large enough to save */
+						stLogData.dwAddress = dwCaveStartAddress;
+						stLogData.dwSize = 1;
+						stLogData.dwType = 0;
+						stLogData.dwCaveType = g_custom_search_value;
+						stLogData.dwCaveSize = dwCaveSize;
+						Addsorteddata(&(logtable.sorted), &stLogData);
+					}
+					/* need to reset save flag and cave size to find the next cave start */
+					bSaveStartAddress = TRUE;
+					dwCaveSize = 0;
+				}
+			}
 		}
 	}
 
@@ -377,10 +471,7 @@ extc int __cdecl ODBG2_Plugininit(void)
 	create_log_window();
 	LoadSettings(NULL);
 
-	Addtolist(0, DRAW_NORMAL, L"");
-	Addtolist(0, DRAW_NORMAL, L"[*] %s v%s", OLLYSPELUNK_NAME, OLLYSPELUNK_VERSION);
-	Addtolist(0, DRAW_NORMAL, L"[*] Coded by: Austyn Krutsinger <akrutsinger@gmail.com>");
-	Addtolist(0, DRAW_NORMAL, L"");
+	Addtolist(0, DRAW_NORMAL, L"[*] %s v%s by: Austyn Krutsinger <akrutsinger@gmail.com>", OLLYSPELUNK_NAME, OLLYSPELUNK_VERSION);
 
 	/* Report success. */
 	return 0;
