@@ -22,7 +22,7 @@
 #endif
 
 #define OLLYSPELUNK_NAME		L"OllySpelunk"		/* Unique plugin name */
-#define OLLYSPELUNK_VERSION		L"0.2.0"			/* Plugin version (stable . update . patch  - status) */
+#define OLLYSPELUNK_VERSION		L"0.3.0"			/* Plugin version (stable . update . patch  - status) */
 
 #ifdef __cplusplus
 extern "C" {
